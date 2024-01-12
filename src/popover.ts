@@ -1,7 +1,7 @@
 import { bringInView, getFocusableElements } from "./utils";
 import { Config, DriverHook, getConfig } from "./config";
 import { getState, setState, State } from "./state";
-import { DriveStep } from "./driver";
+import { DriveStep, Driver } from "./driver";
 import { onDriverClick } from "./events";
 import { emit } from "./emitter";
 
@@ -58,7 +58,30 @@ export function hidePopover() {
   popover.wrapper.style.display = "none";
 }
 
-export function renderPopover(element: Element, step: DriveStep) {
+export function hideButtons() {
+  let popover = getState("popover");
+  if (!popover) {
+    return;
+  }
+
+  popover.footer.style.display = "none";
+
+  setState("__navigationLocked", true);
+  setState("popover", popover);
+}
+
+export function showButtons() {
+  let popover = getState("popover");
+  if (!popover) {
+    return;
+  }
+
+  popover.footer.style.display = "flex";
+  setState("__navigationLocked", false);
+  setState("popover", popover);
+}
+
+export function renderPopover(element: Element, step: DriveStep, driver?: Driver) {
   let popover = getState("popover");
   if (popover) {
     document.body.removeChild(popover.wrapper);
@@ -165,10 +188,15 @@ export function renderPopover(element: Element, step: DriveStep) {
         // If the user has provided a custom callback, call it
         // otherwise, emit the event.
         if (onNextClick) {
-          return onNextClick(element, step, {
-            config: getConfig(),
-            state: getState(),
-          });
+          return onNextClick(
+            element,
+            step,
+            {
+              config: getConfig(),
+              state: getState(),
+            },
+            driver
+          );
         } else {
           return emit("nextClick");
         }
@@ -176,10 +204,15 @@ export function renderPopover(element: Element, step: DriveStep) {
 
       if (target.classList.contains("driver-popover-prev-btn")) {
         if (onPrevClick) {
-          return onPrevClick(element, step, {
-            config: getConfig(),
-            state: getState(),
-          });
+          return onPrevClick(
+            element,
+            step,
+            {
+              config: getConfig(),
+              state: getState(),
+            },
+            driver
+          );
         } else {
           return emit("prevClick");
         }
@@ -187,10 +220,15 @@ export function renderPopover(element: Element, step: DriveStep) {
 
       if (target.classList.contains("driver-popover-close-btn")) {
         if (onCloseClick) {
-          return onCloseClick(element, step, {
-            config: getConfig(),
-            state: getState(),
-          });
+          return onCloseClick(
+            element,
+            step,
+            {
+              config: getConfig(),
+              state: getState(),
+            },
+            driver
+          );
         } else {
           return emit("closeClick");
         }
@@ -204,7 +242,7 @@ export function renderPopover(element: Element, step: DriveStep) {
       return (
         !popover?.description.contains(target) &&
         !popover?.title.contains(target) &&
-        typeof target.className === 'string' &&
+        typeof target.className === "string" &&
         target.className.includes("driver-popover")
       );
     }

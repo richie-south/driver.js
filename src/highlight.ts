@@ -1,4 +1,4 @@
-import { DriveStep } from "./driver";
+import { DriveStep, Driver } from "./driver";
 import { refreshOverlay, trackActiveElement, transitionStage } from "./overlay";
 import { getConfig } from "./config";
 import { hidePopover, renderPopover, repositionPopover } from "./popover";
@@ -27,7 +27,7 @@ function mountDummyElement(): Element {
   return element;
 }
 
-export function highlight(step: DriveStep) {
+export function highlight(step: DriveStep, driver?: Driver) {
   const { element } = step;
   let elemObj =
     typeof element === "function" ? element() : typeof element === "string" ? document.querySelector(element) : element;
@@ -40,7 +40,7 @@ export function highlight(step: DriveStep) {
     elemObj = mountDummyElement();
   }
 
-  transferHighlight(elemObj, step);
+  transferHighlight(elemObj, step, driver);
 }
 
 export function refreshActiveHighlight() {
@@ -56,8 +56,7 @@ export function refreshActiveHighlight() {
   repositionPopover(activeHighlight, activeStep);
 }
 
-
-function transferHighlight(toElement: Element, toStep: DriveStep) {
+function transferHighlight(toElement: Element, toStep: DriveStep, driver?: Driver) {
   const duration = 400;
   const start = Date.now();
 
@@ -118,7 +117,7 @@ function transferHighlight(toElement: Element, toStep: DriveStep) {
     const isHalfwayThrough = timeRemaining <= duration / 2;
 
     if (toStep.popover && isHalfwayThrough && !isPopoverRendered && hasDelayedPopover) {
-      renderPopover(toElement, toStep);
+      renderPopover(toElement, toStep, driver);
       isPopoverRendered = true;
     }
 
@@ -150,7 +149,7 @@ function transferHighlight(toElement: Element, toStep: DriveStep) {
 
   bringInView(toElement);
   if (!hasDelayedPopover && toStep.popover) {
-    renderPopover(toElement, toStep);
+    renderPopover(toElement, toStep, driver);
   }
 
   fromElement.classList.remove("driver-active-element", "driver-no-interaction");

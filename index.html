@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -178,6 +178,7 @@
         <button id="activate-check-btn">Activate and Check</button>
         <button id="backdrop-color-btn">Backdrop Color</button>
         <button id="hooks">Hooks</button>
+        <button id="element-function">Element function</button>
         <button id="destroy-btn" style="border-color: red; background: red; color: white">Destroy</button>
       </div>
       <br />
@@ -351,7 +352,7 @@ npm install driver.js</pre
 
       const basicTourSteps = [
         {
-          element: ".page-header",
+          element: () => document.querySelector(".page-header"),
           popover: {
             title: "New and Improved Driver.js",
             description:
@@ -361,7 +362,7 @@ npm install driver.js</pre
           },
         },
         {
-          element: ".page-header h1",
+          element: () => document.querySelector(".page-header h1"),
           popover: {
             title: "No Stacking Issues",
             description:
@@ -387,7 +388,7 @@ npm install driver.js</pre
           },
         },
         {
-          element: '.buttons',
+          element: ".buttons",
           popover: {
             title: "Buttons",
             description: "Here are some buttons",
@@ -467,13 +468,17 @@ npm install driver.js</pre
           disableActiveInteraction: true,
           showProgress: true,
           progressText: "{{current}} of {{total}} done",
-          onPopoverRender: (popover) => {
-            popover.title.innerHTML = `${driverObj.getActiveIndex()} ${driverObj.hasNextStep() ? 'Yes' : 'No'} ${driverObj.hasPreviousStep() ? 'Yes' : 'No'}`
-            popover.description.innerHTML = `${driverObj.isFirstStep() ? 'Yes' : 'No'} ${driverObj.isLastStep() ? 'Yes' : 'No'}`
+          onPopoverRender: popover => {
+            popover.title.innerHTML = `${driverObj.getActiveIndex()} ${driverObj.hasNextStep() ? "Yes" : "No"} ${
+              driverObj.hasPreviousStep() ? "Yes" : "No"
+            }`;
+            popover.description.innerHTML = `${driverObj.isFirstStep() ? "Yes" : "No"} ${
+              driverObj.isLastStep() ? "Yes" : "No"
+            }`;
 
             console.log(driverObj.getActiveIndex());
             console.log(driverObj.getActiveStep());
-          }
+          },
         });
 
         driverObj.drive(4);
@@ -490,16 +495,16 @@ npm install driver.js</pre
           {
             element: "h1",
             popover: {
-              description: "This is a new description"
-            }
+              description: "This is a new description",
+            },
           },
           {
             element: "p",
             popover: {
-              description: "This is another new description"
-            }
-          }
-        ])
+              description: "This is another new description",
+            },
+          },
+        ]);
 
         driverObj.drive();
       });
@@ -516,16 +521,16 @@ npm install driver.js</pre
           {
             element: "h1",
             popover: {
-              description: "This is a new description"
-            }
+              description: "This is a new description",
+            },
           },
           {
             element: "p",
             popover: {
-              description: "This is another new description"
-            }
-          }
-        ])
+              description: "This is another new description",
+            },
+          },
+        ]);
 
         driverObj.drive();
       });
@@ -623,7 +628,7 @@ npm install driver.js</pre
       document.getElementById("basic-tour").addEventListener("click", () => {
         const driverObj = driver({
           showProgress: true,
-          showButtons: ["next", 'previous', 'close'],
+          showButtons: ["next", "previous", "close"],
           steps: basicTourSteps,
         });
 
@@ -834,10 +839,10 @@ npm install driver.js</pre
             driverObj.destroy();
           },
           steps: [
-            { popover: { title: "Some title", description: "Some description" }},
-            { popover: { title: "Another title", description: "Some description" }},
-            { popover: { title: "Yet another title", description: "Some description" }},
-          ]
+            { popover: { title: "Some title", description: "Some description" } },
+            { popover: { title: "Another title", description: "Some description" } },
+            { popover: { title: "Yet another title", description: "Some description" } },
+          ],
         });
 
         driverObj.drive();
@@ -855,10 +860,10 @@ npm install driver.js</pre
             });
           },
           steps: [
-            { popover: { title: "Some title", description: "Some description" }},
-            { popover: { title: "Another title", description: "Some description" }},
-            { popover: { title: "Yet another title", description: "Some description" }},
-          ]
+            { popover: { title: "Some title", description: "Some description" } },
+            { popover: { title: "Another title", description: "Some description" } },
+            { popover: { title: "Yet another title", description: "Some description" } },
+          ],
         });
 
         driverObj.drive();
@@ -875,6 +880,56 @@ npm install driver.js</pre
         }).highlight({
           element: "#backdrop-color-btn",
         });
+      });
+
+      document.getElementById("element-function").addEventListener("click", () => {
+        const driverObj = driver({
+          animate: true,
+          showProgress: false,
+          allowClose: false,
+          steps: [
+            {
+              popover: {
+                title: "Lets build a form",
+                description: "This is a tutorial to get you starten on building a dynamic form",
+              },
+            },
+            {
+              element: () => document.querySelector(".page-header"),
+              popover: {
+                title: "Title",
+                description: "Description",
+                onNextClick: (_, __, ___, d) => {
+                  console.log(d);
+
+                  d.moveNext();
+                },
+              },
+            },
+            {
+              element: () => document.querySelector(".page-header h1"),
+              popover: {
+                title: "No Stacking Issues",
+                description:
+                  "Unlike the older version, new version doesn't work with z-indexes so no more positional issues.",
+                side: "left",
+                align: "start",
+              },
+            },
+          ],
+        });
+
+        driverObj.drive();
+
+        /* setTimeout(() => {
+          console.log("hide buttons");
+          driverObj.hideButtons();
+
+          setTimeout(() => {
+            console.log("show buttons");
+            driverObj.showButtons();
+          }, 3000);
+        }, 3000); */
       });
 
       document.getElementById("activate-check-btn").addEventListener("click", () => {
