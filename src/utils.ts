@@ -23,8 +23,8 @@ export function getFocusableElements(parentEls: Element[] | HTMLElement[]) {
     });
 }
 
-export function bringInView(element: Element) {
-  if (!element || isElementInView(element)) {
+export function bringInView(window: Window, element: Element) {
+  if (!element || isElementInView(window, element)) {
     return;
   }
 
@@ -49,14 +49,14 @@ function hasScrollableParent(e: Element) {
   return parent.scrollHeight > parent.clientHeight;
 }
 
-function isElementInView(element: Element) {
+function isElementInView(window: Window, element: Element) {
   const rect = element.getBoundingClientRect();
 
   return (
     rect.top >= 0 &&
     rect.left >= 0 &&
-    rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-    rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+    rect.bottom <= (window.innerHeight || window.document.documentElement.clientHeight) &&
+    rect.right <= (window.innerWidth || window.document.documentElement.clientWidth)
   );
 }
 

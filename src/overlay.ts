@@ -13,7 +13,7 @@ export type StageDefinition = {
 
 // This method calculates the animated new position of the
 // stage (called for each frame by requestAnimationFrame)
-export function transitionStage(elapsed: number, duration: number, from: Element, to: Element) {
+export function transitionStage(window: Window, elapsed: number, duration: number, from: Element, to: Element) {
   let activeStagePosition = getState("__activeStagePosition");
 
   const fromDefinition = activeStagePosition ? activeStagePosition : from.getBoundingClientRect();
@@ -31,11 +31,11 @@ export function transitionStage(elapsed: number, duration: number, from: Element
     height,
   };
 
-  renderOverlay(activeStagePosition);
+  renderOverlay(window, activeStagePosition);
   setState("__activeStagePosition", activeStagePosition);
 }
 
-export function trackActiveElement(element: Element) {
+export function trackActiveElement(window: Window, element: Element) {
   if (!element) {
     return;
   }
@@ -51,7 +51,7 @@ export function trackActiveElement(element: Element) {
 
   setState("__activeStagePosition", activeStagePosition);
 
-  renderOverlay(activeStagePosition);
+  renderOverlay(window, activeStagePosition);
 }
 
 export function refreshOverlay() {
@@ -73,11 +73,11 @@ export function refreshOverlay() {
   overlaySvg.setAttribute("viewBox", `0 0 ${windowX} ${windowY}`);
 }
 
-function mountOverlay(stagePosition: StageDefinition) {
-  const overlaySvg = createOverlaySvg(stagePosition);
-  document.body.appendChild(overlaySvg);
+function mountOverlay(window: Window, stagePosition: StageDefinition) {
+  const overlaySvg = createOverlaySvg(window, stagePosition);
+  window.document.body.appendChild(overlaySvg);
 
-  onDriverClick(overlaySvg, e => {
+  onDriverClick(window, overlaySvg, e => {
     const target = e.target as SVGElement;
     if (target.tagName !== "path") {
       return;
@@ -89,12 +89,12 @@ function mountOverlay(stagePosition: StageDefinition) {
   setState("__overlaySvg", overlaySvg);
 }
 
-function renderOverlay(stagePosition: StageDefinition) {
+function renderOverlay(window: Window, stagePosition: StageDefinition) {
   const overlaySvg = getState("__overlaySvg");
 
   // TODO: cancel rendering if element is not visible
   if (!overlaySvg) {
-    mountOverlay(stagePosition);
+    mountOverlay(window, stagePosition);
 
     return;
   }
@@ -104,14 +104,14 @@ function renderOverlay(stagePosition: StageDefinition) {
     throw new Error("no path element found in stage svg");
   }
 
-  pathElement.setAttribute("d", generateStageSvgPathString(stagePosition));
+  pathElement.setAttribute("d", generateStageSvgPathString(window, stagePosition));
 }
 
-function createOverlaySvg(stage: StageDefinition): SVGSVGElement {
+function createOverlaySvg(window: Window, stage: StageDefinition): SVGSVGElement {
   const windowX = window.innerWidth;
   const windowY = window.innerHeight;
 
-  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  const svg = window.document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.classList.add("driver-overlay", "driver-overlay-animated");
 
   svg.setAttribute("viewBox", `0 0 ${windowX} ${windowY}`);
@@ -131,9 +131,9 @@ function createOverlaySvg(stage: StageDefinition): SVGSVGElement {
   svg.style.width = "100%";
   svg.style.height = "100%";
 
-  const stagePath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  const stagePath = window.document.createElementNS("http://www.w3.org/2000/svg", "path");
 
-  stagePath.setAttribute("d", generateStageSvgPathString(stage));
+  stagePath.setAttribute("d", generateStageSvgPathString(window, stage));
 
   stagePath.style.fill = getConfig("overlayColor") || "rgb(0,0,0)";
   stagePath.style.opacity = `${getConfig("overlayOpacity")}`;
@@ -145,7 +145,7 @@ function createOverlaySvg(stage: StageDefinition): SVGSVGElement {
   return svg;
 }
 
-function generateStageSvgPathString(stage: StageDefinition) {
+function generateStageSvgPathString(window: Window, stage: StageDefinition) {
   const windowX = window.innerWidth;
   const windowY = window.innerHeight;
 

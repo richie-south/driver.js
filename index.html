@@ -884,6 +884,8 @@ npm install driver.js</pre
 
       document.getElementById("element-function").addEventListener("click", () => {
         const driverObj = driver({
+          window: window,
+          disableArrowKeys: true,
           animate: true,
           showProgress: false,
           allowClose: false,

@@ -5,7 +5,7 @@ import { hidePopover, renderPopover, repositionPopover } from "./popover";
 import { bringInView } from "./utils";
 import { getState, setState } from "./state";
 
-function mountDummyElement(): Element {
+function mountDummyElement(document: Document): Element {
   const existingDummy = document.getElementById("driver-dummy-element");
   if (existingDummy) {
     return existingDummy;
@@ -27,23 +27,27 @@ function mountDummyElement(): Element {
   return element;
 }
 
-export function highlight(step: DriveStep, driver?: Driver) {
+export function highlight(window: Window, step: DriveStep, driver?: Driver) {
   const { element } = step;
   let elemObj =
-    typeof element === "function" ? element() : typeof element === "string" ? document.querySelector(element) : element;
+    typeof element === "function"
+      ? element()
+      : typeof element === "string"
+        ? window.document.querySelector(element)
+        : element;
 
   // If the element is not found, we mount a 1px div
   // at the center of the screen to highlight and show
   // the popover on top of that. This is to show a
   // modal-like highlight.
   if (!elemObj) {
-    elemObj = mountDummyElement();
+    elemObj = mountDummyElement(window.document);
   }
 
-  transferHighlight(elemObj, step, driver);
+  transferHighlight(window, elemObj, step, driver);
 }
 
-export function refreshActiveHighlight() {
+export function refreshActiveHighlight(window: Window) {
   const activeHighlight = getState("__activeElement");
   const activeStep = getState("__activeStep")!;
 
@@ -51,12 +55,12 @@ export function refreshActiveHighlight() {
     return;
   }
 
-  trackActiveElement(activeHighlight);
+  trackActiveElement(window, activeHighlight);
   refreshOverlay();
   repositionPopover(activeHighlight, activeStep);
 }
 
-function transferHighlight(toElement: Element, toStep: DriveStep, driver?: Driver) {
+function transferHighlight(window: Window, toElement: Element, toStep: DriveStep, driver?: Driver) {
   const duration = 400;
   const start = Date.now();
 
@@ -117,14 +121,14 @@ function transferHighlight(toElement: Element, toStep: DriveStep, driver?: Drive
     const isHalfwayThrough = timeRemaining <= duration / 2;
 
     if (toStep.popover && isHalfwayThrough && !isPopoverRendered && hasDelayedPopover) {
-      renderPopover(toElement, toStep, driver);
+      renderPopover(window, toElement, toStep, driver);
       isPopoverRendered = true;
     }
 
     if (getConfig("animate") && elapsed < duration) {
-      transitionStage(elapsed, duration, fromElement, toElement);
+      transitionStage(window, elapsed, duration, fromElement, toElement);
     } else {
-      trackActiveElement(toElement);
+      trackActiveElement(window, toElement);
 
       if (highlightedHook) {
         highlightedHook(isToDummyElement ? undefined : toElement, toStep, {
@@ -147,9 +151,9 @@ function transferHighlight(toElement: Element, toStep: DriveStep, driver?: Drive
 
   window.requestAnimationFrame(animate);
 
-  bringInView(toElement);
+  bringInView(window, toElement);
   if (!hasDelayedPopover && toStep.popover) {
-    renderPopover(toElement, toStep, driver);
+    renderPopover(window, toElement, toStep, driver);
   }
 
   fromElement.classList.remove("driver-active-element", "driver-no-interaction");
@@ -168,7 +172,7 @@ function transferHighlight(toElement: Element, toStep: DriveStep, driver?: Drive
   toElement.setAttribute("aria-controls", "driver-popover-content");
 }
 
-export function destroyHighlight() {
+export function destroyHighlight(document: Document) {
   document.getElementById("driver-dummy-element")?.remove();
   document.querySelectorAll(".driver-active-element").forEach(element => {
     element.classList.remove("driver-active-element", "driver-no-interaction");

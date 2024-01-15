@@ -9,6 +9,7 @@ import "./driver.css";
 
 export type DriveStep = {
   element?: string | Element | (() => Element);
+
   onHighlightStarted?: DriverHook;
   onHighlighted?: DriverHook;
   onDeselected?: DriverHook;
@@ -16,6 +17,8 @@ export type DriveStep = {
 };
 
 export function driver(options: Config = {}) {
+  const document = options.window?.document ?? window.document;
+
   function handleClose() {
     if (!getConfig("allowClose")) {
       return;
@@ -145,12 +148,15 @@ export function driver(options: Config = {}) {
     setState("isInitialized", true);
     document.body.classList.add("driver-active", getConfig("animate") ? "driver-fade" : "driver-simple");
 
-    initEvents();
+    initEvents(options.window ?? window);
 
     listen("overlayClick", handleClose);
     listen("escapePress", handleClose);
-    listen("arrowLeftPress", handleArrowLeft);
-    listen("arrowRightPress", handleArrowRight);
+
+    if (!options.disableArrowKeys) {
+      listen("arrowLeftPress", handleArrowLeft);
+      listen("arrowRightPress", handleArrowRight);
+    }
   }
 
   function drive(stepIndex: number = 0) {
@@ -199,6 +205,7 @@ export function driver(options: Config = {}) {
     const onCloseClick = currentStep.popover?.onCloseClick || getConfig("onCloseClick");
 
     highlight(
+      options.window ?? window,
       {
         ...currentStep,
         popover: {
@@ -262,9 +269,9 @@ export function driver(options: Config = {}) {
 
     document.body.classList.remove("driver-active", "driver-fade", "driver-simple");
 
-    destroyEvents();
+    destroyEvents(options.window ?? window);
     destroyPopover();
-    destroyHighlight();
+    destroyHighlight(document);
     destroyOverlay();
     destroyEmitter();
 
@@ -348,7 +355,7 @@ export function driver(options: Config = {}) {
     },
     highlight: (step: DriveStep) => {
       init();
-      highlight({
+      highlight(options.window ?? window, {
         ...step,
         popover: step.popover
           ? {

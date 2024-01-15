@@ -12,6 +12,8 @@ export type DriverHook = (
 export type Config = {
   steps?: DriveStep[];
 
+  window?: Window;
+  disableArrowKeys?: boolean;
   animate?: boolean;
   overlayColor?: string;
   overlayOpacity?: number;

@@ -81,14 +81,14 @@ export function showButtons() {
   setState("popover", popover);
 }
 
-export function renderPopover(element: Element, step: DriveStep, driver?: Driver) {
+export function renderPopover(window: Window, element: Element, step: DriveStep, driver?: Driver) {
   let popover = getState("popover");
   if (popover) {
-    document.body.removeChild(popover.wrapper);
+    window.document.body.removeChild(popover.wrapper);
   }
 
-  popover = createPopover();
-  document.body.appendChild(popover.wrapper);
+  popover = createPopover(window);
+  window.document.body.appendChild(popover.wrapper);
 
   const {
     title,
@@ -176,6 +176,7 @@ export function renderPopover(element: Element, step: DriveStep, driver?: Driver
 
   // Handles the popover button clicks
   onDriverClick(
+    window,
     popover.wrapper,
     e => {
       const target = e.target as HTMLElement;
@@ -259,7 +260,7 @@ export function renderPopover(element: Element, step: DriveStep, driver?: Driver
   }
 
   repositionPopover(element, step);
-  bringInView(popoverWrapper);
+  bringInView(window, popoverWrapper);
 
   // Focus on the first focusable element in active element or popover
   const isToDummyElement = element.classList.contains("driver-dummy-element");
@@ -630,47 +631,47 @@ function renderPopoverArrow(alignment: Alignment, side: Side, element: Element) 
   }
 }
 
-function createPopover(): PopoverDOM {
-  const wrapper = document.createElement("div");
+function createPopover(window: Window): PopoverDOM {
+  const wrapper = window.document.createElement("div");
   wrapper.classList.add("driver-popover");
 
-  const arrow = document.createElement("div");
+  const arrow = window.document.createElement("div");
   arrow.classList.add("driver-popover-arrow");
 
-  const title = document.createElement("header");
+  const title = window.document.createElement("header");
   title.id = "driver-popover-title";
   title.classList.add("driver-popover-title");
   title.style.display = "none";
   title.innerText = "Popover Title";
 
-  const description = document.createElement("div");
+  const description = window.document.createElement("div");
   description.id = "driver-popover-description";
   description.classList.add("driver-popover-description");
   description.style.display = "none";
   description.innerText = "Popover description is here";
 
-  const closeButton = document.createElement("button");
+  const closeButton = window.document.createElement("button");
   closeButton.type = "button";
   closeButton.classList.add("driver-popover-close-btn");
   closeButton.setAttribute("aria-label", "Close");
   closeButton.innerHTML = "&times;";
 
-  const footer = document.createElement("footer");
+  const footer = window.document.createElement("footer");
   footer.classList.add("driver-popover-footer");
 
-  const progress = document.createElement("span");
+  const progress = window.document.createElement("span");
   progress.classList.add("driver-popover-progress-text");
   progress.innerText = "";
 
-  const footerButtons = document.createElement("span");
+  const footerButtons = window.document.createElement("span");
   footerButtons.classList.add("driver-popover-navigation-btns");
 
-  const previousButton = document.createElement("button");
+  const previousButton = window.document.createElement("button");
   previousButton.type = "button";
   previousButton.classList.add("driver-popover-prev-btn");
   previousButton.innerHTML = "&larr; Previous";
 
-  const nextButton = document.createElement("button");
+  const nextButton = window.document.createElement("button");
   nextButton.type = "button";
   nextButton.classList.add("driver-popover-next-btn");
   nextButton.innerHTML = "Next &rarr;";

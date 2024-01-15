@@ -4,16 +4,19 @@ import { getState, setState } from "./state";
 import { getConfig } from "./config";
 import { getFocusableElements } from "./utils";
 
-export function requireRefresh() {
+export function requireRefresh(window: Window) {
   const resizeTimeout = getState("__resizeTimeout");
   if (resizeTimeout) {
     window.cancelAnimationFrame(resizeTimeout);
   }
 
-  setState("__resizeTimeout", window.requestAnimationFrame(refreshActiveHighlight));
+  setState(
+    "__resizeTimeout",
+    window.requestAnimationFrame(() => refreshActiveHighlight(window))
+  );
 }
 
-function trapFocus(e: KeyboardEvent) {
+function trapFocus(e: KeyboardEvent, document: Document) {
   const isActivated = getState("isInitialized");
   if (!isActivated) {
     return;
@@ -75,6 +78,7 @@ function onKeyup(e: KeyboardEvent) {
  * @param {(target: HTMLElement) => boolean} shouldPreventDefault Whether to prevent default action i.e. link clicks etc
  */
 export function onDriverClick(
+  window: Window,
   element: Element,
   listener: (pointer: MouseEvent | PointerEvent) => void,
   shouldPreventDefault?: (target: HTMLElement) => boolean
@@ -98,13 +102,13 @@ export function onDriverClick(
   const useCapture = true;
 
   // Events to disable
-  document.addEventListener("pointerdown", listenerWrapper, useCapture);
-  document.addEventListener("mousedown", listenerWrapper, useCapture);
-  document.addEventListener("pointerup", listenerWrapper, useCapture);
-  document.addEventListener("mouseup", listenerWrapper, useCapture);
+  window.document.addEventListener("pointerdown", listenerWrapper, useCapture);
+  window.document.addEventListener("mousedown", listenerWrapper, useCapture);
+  window.document.addEventListener("pointerup", listenerWrapper, useCapture);
+  window.document.addEventListener("mouseup", listenerWrapper, useCapture);
 
   // Actual click handler
-  document.addEventListener(
+  window.document.addEventListener(
     "click",
     e => {
       listenerWrapper(e, listener);
@@ -113,15 +117,15 @@ export function onDriverClick(
   );
 }
 
-export function initEvents() {
+export function initEvents(window: Window) {
   window.addEventListener("keyup", onKeyup, false);
-  window.addEventListener("keydown", trapFocus, false);
-  window.addEventListener("resize", requireRefresh);
-  window.addEventListener("scroll", requireRefresh);
+  window.addEventListener("keydown", e => trapFocus(e, window.document), false);
+  window.addEventListener("resize", () => requireRefresh(window));
+  window.addEventListener("scroll", () => requireRefresh(window));
 }
 
-export function destroyEvents() {
+export function destroyEvents(window: Window) {
   window.removeEventListener("keyup", onKeyup);
-  window.removeEventListener("resize", requireRefresh);
-  window.removeEventListener("scroll", requireRefresh);
+  window.removeEventListener("resize", () => requireRefresh(window));
+  window.removeEventListener("scroll", () => requireRefresh(window));
 }
