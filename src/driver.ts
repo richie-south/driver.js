@@ -42,6 +42,30 @@ export function driver(options: Config = {}) {
     }
   }
 
+  function moveNextTriggerCallback() {
+    const activeIndex = getState("activeIndex");
+    const activeStep = getState("__activeStep");
+    const activeElement = getState("__activeElement");
+    if (typeof activeIndex === "undefined" || typeof activeStep === "undefined") {
+      return;
+    }
+
+    const onNextClick = activeStep.popover?.onNextClick || getConfig("onNextClick");
+    if (onNextClick) {
+      return onNextClick(
+        activeElement,
+        activeStep,
+        {
+          config: getConfig(),
+          state: getState(),
+        },
+        api
+      );
+    }
+
+    moveNext();
+  }
+
   function movePrevious() {
     const activeIndex = getState("activeIndex");
     const steps = getConfig("steps") || [];
@@ -339,6 +363,7 @@ export function driver(options: Config = {}) {
     getPreviousElement: () => getState("previousElement"),
     getPreviousStep: () => getState("previousStep"),
     moveNext,
+    moveNextTriggerCallback: () => moveNextTriggerCallback(),
     movePrevious,
     moveTo,
     hasNextStep: () => {
